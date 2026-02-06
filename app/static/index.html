@@ -85,8 +85,50 @@
 			form {
 				padding: 14px 18px 18px;
 				display: grid;
+				grid-template-columns: 1fr;
+				gap: 12px;
+			}
+
+			.form-group {
+				margin: 0;
+				padding: 12px;
+				border: 1px solid var(--line);
+				border-radius: 10px;
+				background: var(--panel-strong);
+			}
+
+			.form-group legend {
+				padding: 0 6px;
+				font-size: 12px;
+				font-weight: 700;
+				color: var(--muted);
+			}
+
+			.group-grid {
+				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 				gap: 12px;
+			}
+
+			.form-advanced {
+				border: 1px solid var(--line);
+				border-radius: 10px;
+				background: var(--panel-strong);
+				padding: 8px 10px 10px;
+			}
+
+			.form-advanced > summary {
+				cursor: pointer;
+				font-size: 12px;
+				font-weight: 700;
+				color: var(--muted);
+				user-select: none;
+			}
+
+			.advanced-sections {
+				display: grid;
+				gap: 10px;
+				margin-top: 10px;
 			}
 
 			label {
@@ -99,7 +141,7 @@
 			.label-title {
 				display: inline-flex;
 				align-items: center;
-				gap: 6px;
+				gap: 4px;
 				line-height: 1.2;
 			}
 
@@ -108,14 +150,15 @@
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				width: 16px;
-				height: 16px;
+				flex: 0 0 auto;
+				width: 14px;
+				height: 14px;
 				padding: 0;
 				border: 1px solid #93a3b3;
 				border-radius: 999px;
 				background: #fff;
 				color: #64748b;
-				font-size: 11px;
+				font-size: 10px;
 				font-weight: 700;
 				line-height: 1;
 				cursor: pointer;
@@ -159,13 +202,54 @@
 				white-space: normal;
 			}
 
-			.help-trigger:hover::before,
-			.help-trigger:hover::after,
 			.help-trigger:focus-visible::before,
 			.help-trigger:focus-visible::after,
 			.help-trigger.is-open::before,
 			.help-trigger.is-open::after {
 				opacity: 1;
+			}
+
+			.file-dropzone {
+				position: relative;
+				min-height: 92px;
+				border: 2px dashed #8aa3b8;
+				border-radius: 12px;
+				background: #f8fbff;
+				display: grid;
+				place-items: center;
+				text-align: center;
+				padding: 10px;
+				transition: border-color 0.12s ease, background-color 0.12s ease;
+			}
+
+			.file-dropzone.is-dragging {
+				border-color: #0f766e;
+				background: #edfdf8;
+			}
+
+			.file-drop-text {
+				font-size: 12px;
+				color: #4b5563;
+				pointer-events: none;
+			}
+
+			.file-drop-text strong {
+				display: block;
+				color: #1f2937;
+				font-size: 13px;
+				margin-bottom: 4px;
+			}
+
+			.file-input-overlay {
+				position: absolute;
+				inset: 0;
+				opacity: 0;
+				cursor: pointer;
+				border: 0;
+				padding: 0;
+				margin: 0;
+				width: 100%;
+				height: 100%;
 			}
 
 			input,
@@ -356,269 +440,317 @@
 					</div>
 				</div>
 					<form id="analyzeForm">
-						<label class="span-2">
-							<span class="label-title"
-								>ファイル (画像/PDF)
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="解析対象ファイルです。PDFはページごとに展開してOCRします。"
-									aria-label="ファイルの説明"
-								>
-									?
-								</button>
-							</span>
-							<input id="file" name="file" type="file" accept=".pdf,image/*" required />
-						</label>
-						<label>
-							<span class="label-title"
-								>task
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="認識タイプを指定します。text/table/formula/extract_json から選択します。"
-									aria-label="taskの説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="task" name="task">
-								<option value="text" selected>Text</option>
-								<option value="table">Table</option>
-								<option value="formula">Formula</option>
-								<option value="extract_json">JSON抽出</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>領域分割OCR
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="ONでレイアウト解析後に領域ごとOCRします。段組み・縦書き文書の読順崩れ対策向けです。"
-									aria-label="領域分割OCRの説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="use_layout" name="use_layout">
-								<option value="false" selected>OFF (従来ページOCR)</option>
-								<option value="true">ON (PP-DocLayoutV3)</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>reading_order
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="領域の結合順です。autoは自動推定、ltr_ttbは左から右、rtl_ttbは右から左、vertical_rlは縦書き右列優先です。"
-									aria-label="reading_orderの説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="reading_order" name="reading_order">
-								<option value="auto" selected>auto</option>
-								<option value="ltr_ttb">ltr_ttb</option>
-								<option value="rtl_ttb">rtl_ttb</option>
-								<option value="vertical_rl">vertical_rl</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>改行処理
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="OCR後の改行整形モードです。noneはそのまま、paragraphは段落維持、compactは改行を強く圧縮します。"
-									aria-label="改行処理の説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="linebreak_mode" name="linebreak_mode">
-								<option value="none" selected>処理しない</option>
-								<option value="paragraph">段落整形（空行維持）</option>
-								<option value="compact">強力整形（改行ほぼ除去）</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>device
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="推論に使う計算デバイスです。autoはCUDA利用可ならGPU、不可ならCPUを選びます。"
-									aria-label="deviceの説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="device" name="device">
-								<option value="auto" selected>auto</option>
-								<option value="cuda">cuda</option>
-								<option value="cpu">cpu</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>dpi (PDF only)
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="PDFを画像化する解像度です。高いほど精細ですが処理時間とメモリ消費が増えます。"
-									aria-label="dpiの説明"
-								>
-									?
-								</button>
-							</span>
-							<input id="dpi" name="dpi" type="number" min="72" max="600" value="220" />
-						</label>
-						<label>
-							<span class="label-title"
-								>max_new_tokens
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="1回の生成トークン上限です。大きいほど長文を返せますが遅くなります。"
-									aria-label="max_new_tokensの説明"
-								>
-									?
-								</button>
-							</span>
-							<input
-								id="max_new_tokens"
-								name="max_new_tokens"
-								type="number"
-								min="1"
-								max="32768"
-								value="1024"
-							/>
-						</label>
-						<label>
-							<span class="label-title"
-								>temperature
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="生成のランダム性です。0は最も決定的、値を上げると多様になります。"
-									aria-label="temperatureの説明"
-								>
-									?
-								</button>
-							</span>
-							<input
-								id="temperature"
-								name="temperature"
-								type="number"
-								step="0.1"
-								min="0"
-								max="2"
-								value="0"
-							/>
-						</label>
-						<label>
-							<span class="label-title"
-								>layout backend
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="レイアウト解析器です。ppdoclayoutv3推奨。noneはページ全体を1領域として扱います。"
-									aria-label="layout backendの説明"
-								>
-									?
-								</button>
-							</span>
-							<select id="layout_backend" name="layout_backend">
-								<option value="ppdoclayoutv3" selected>ppdoclayoutv3</option>
-								<option value="none">none</option>
-							</select>
-						</label>
-						<label>
-							<span class="label-title"
-								>region_padding(px)
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="各領域の外側に足す余白です。文字切れ防止に有効ですが、大きすぎると隣接領域が混ざります。"
-									aria-label="region_paddingの説明"
-								>
-									?
-								</button>
-							</span>
-							<input
-								id="region_padding"
-								name="region_padding"
-								type="number"
-								min="0"
-								max="256"
-								value="12"
-							/>
-						</label>
-						<label>
-							<span class="label-title"
-								>max_regions
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="1ページで処理する領域の上限です。暴走防止用で、超過分は切り捨てます。"
-									aria-label="max_regionsの説明"
-								>
-									?
-								</button>
-							</span>
-							<input
-								id="max_regions"
-								name="max_regions"
-								type="number"
-								min="1"
-								max="1000"
-								value="200"
-							/>
-						</label>
-						<label>
-							<span class="label-title"
-								>region_parallelism
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="同時に回す領域推論数です。1が安全で、上げると速くなる場合がありますがVRAM使用量は増えます。"
-									aria-label="region_parallelismの説明"
-								>
-									?
-								</button>
-							</span>
-							<input
-								id="region_parallelism"
-								name="region_parallelism"
-								type="number"
-								min="1"
-								max="8"
-								value="1"
-							/>
-						</label>
-						<label id="schemaWrap" class="span-2 hidden">
-							<span class="label-title"
-								>schema (JSON Schema string)
-								<button
-									class="help-trigger"
-									type="button"
-									data-help="task が extract_json のとき必須です。出力したいJSON構造をスキーマで指定します。"
-									aria-label="schemaの説明"
-								>
-									?
-								</button>
-							</span>
-							<textarea
-								id="schema"
-								name="schema"
-								placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'
-							></textarea>
-						</label>
-					<div class="actions">
-						<button id="submitBtn" type="submit">実行</button>
-						<button
+						<fieldset class="form-group">
+							<legend>入力</legend>
+							<div class="group-grid">
+								<label class="span-2">
+								<span class="label-title"
+									>ファイル (画像/PDF)
+									<button
+										class="help-trigger"
+											type="button"
+											data-help="解析対象ファイルです。PDFはページごとに展開してOCRします。"
+											aria-label="ファイルの説明"
+										>
+											?
+										</button>
+									</span>
+									<div class="file-dropzone" id="fileDropzone">
+										<div class="file-drop-text" id="fileDropText">
+											<strong>ドラッグ&ドロップ</strong>
+											またはクリックしてファイルを選択
+										</div>
+										<input
+											id="file"
+											name="file"
+											type="file"
+											class="file-input-overlay"
+											accept=".pdf,image/*"
+											required
+										/>
+									</div>
+								</label>
+								<label>
+									<span class="label-title"
+										>task
+										<button
+											class="help-trigger"
+											type="button"
+											data-help="認識タイプを指定します。text/table/formula/extract_json から選択します。"
+											aria-label="taskの説明"
+										>
+											?
+										</button>
+									</span>
+									<select id="task" name="task">
+										<option value="text" selected>Text</option>
+										<option value="table">Table</option>
+										<option value="formula">Formula</option>
+										<option value="extract_json">JSON抽出</option>
+									</select>
+								</label>
+								<label id="schemaWrap" class="span-2 hidden">
+									<span class="label-title"
+										>schema (JSON Schema string)
+										<button
+											class="help-trigger"
+											type="button"
+											data-help="task が extract_json のとき必須です。出力したいJSON構造をスキーマで指定します。"
+											aria-label="schemaの説明"
+										>
+											?
+										</button>
+									</span>
+									<textarea
+										id="schema"
+										name="schema"
+										placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'
+									></textarea>
+								</label>
+							</div>
+						</fieldset>
+
+						<details class="form-advanced">
+							<summary>詳細設定</summary>
+							<div class="advanced-sections">
+								<fieldset class="form-group">
+									<legend>レイアウトOCR</legend>
+									<div class="group-grid">
+										<label>
+											<span class="label-title"
+												>領域分割OCR
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="ONでレイアウト解析後に領域ごとOCRします。段組み・縦書き文書の読順崩れ対策向けです。"
+													aria-label="領域分割OCRの説明"
+												>
+													?
+												</button>
+											</span>
+											<select id="use_layout" name="use_layout">
+												<option value="false" selected>OFF (従来ページOCR)</option>
+												<option value="true">ON (PP-DocLayoutV3)</option>
+											</select>
+										</label>
+										<label>
+											<span class="label-title"
+												>layout backend
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="レイアウト解析器です。ppdoclayoutv3推奨。noneはページ全体を1領域として扱います。"
+													aria-label="layout backendの説明"
+												>
+													?
+												</button>
+											</span>
+											<select id="layout_backend" name="layout_backend">
+												<option value="ppdoclayoutv3" selected>ppdoclayoutv3</option>
+												<option value="none">none</option>
+											</select>
+										</label>
+										<label>
+											<span class="label-title"
+												>reading_order
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="領域の結合順です。autoは自動推定、ltr_ttbは左から右、rtl_ttbは右から左、vertical_rlは縦書き右列優先です。"
+													aria-label="reading_orderの説明"
+												>
+													?
+												</button>
+											</span>
+											<select id="reading_order" name="reading_order">
+												<option value="auto" selected>auto</option>
+												<option value="ltr_ttb">ltr_ttb</option>
+												<option value="rtl_ttb">rtl_ttb</option>
+												<option value="vertical_rl">vertical_rl</option>
+											</select>
+										</label>
+										<label>
+											<span class="label-title"
+												>region_padding(px)
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="各領域の外側に足す余白です。文字切れ防止に有効ですが、大きすぎると隣接領域が混ざります。"
+													aria-label="region_paddingの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="region_padding"
+												name="region_padding"
+												type="number"
+												min="0"
+												max="256"
+												value="12"
+											/>
+										</label>
+										<label>
+											<span class="label-title"
+												>max_regions
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="1ページで処理する領域の上限です。暴走防止用で、超過分は切り捨てます。"
+													aria-label="max_regionsの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="max_regions"
+												name="max_regions"
+												type="number"
+												min="1"
+												max="1000"
+												value="200"
+											/>
+										</label>
+										<label>
+											<span class="label-title"
+												>region_parallelism
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="同時に回す領域推論数です。1が安全で、上げると速くなる場合がありますがVRAM使用量は増えます。"
+													aria-label="region_parallelismの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="region_parallelism"
+												name="region_parallelism"
+												type="number"
+												min="1"
+												max="8"
+												value="1"
+											/>
+										</label>
+									</div>
+								</fieldset>
+
+								<fieldset class="form-group">
+									<legend>品質</legend>
+									<div class="group-grid">
+										<label>
+											<span class="label-title"
+												>改行処理
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="OCR後の改行整形モードです。noneはそのまま、paragraphは段落維持、compactは改行を強く圧縮します。"
+													aria-label="改行処理の説明"
+												>
+													?
+												</button>
+											</span>
+											<select id="linebreak_mode" name="linebreak_mode">
+												<option value="none" selected>処理しない</option>
+												<option value="paragraph">段落整形（空行維持）</option>
+												<option value="compact">強力整形（改行ほぼ除去）</option>
+											</select>
+										</label>
+										<label>
+											<span class="label-title"
+												>dpi (PDF only)
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="PDFを画像化する解像度です。高いほど精細ですが処理時間とメモリ消費が増えます。"
+													aria-label="dpiの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="dpi"
+												name="dpi"
+												type="number"
+												min="72"
+												max="600"
+												value="220"
+											/>
+										</label>
+										<label>
+											<span class="label-title"
+												>max_new_tokens
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="1回の生成トークン上限です。大きいほど長文を返せますが遅くなります。"
+													aria-label="max_new_tokensの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="max_new_tokens"
+												name="max_new_tokens"
+												type="number"
+												min="1"
+												max="32768"
+												value="1024"
+											/>
+										</label>
+										<label>
+											<span class="label-title"
+												>temperature
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="生成のランダム性です。0は最も決定的、値を上げると多様になります。"
+													aria-label="temperatureの説明"
+												>
+													?
+												</button>
+											</span>
+											<input
+												id="temperature"
+												name="temperature"
+												type="number"
+												step="0.1"
+												min="0"
+												max="2"
+												value="0"
+											/>
+										</label>
+									</div>
+								</fieldset>
+
+								<fieldset class="form-group">
+									<legend>実行</legend>
+									<div class="group-grid">
+										<label>
+											<span class="label-title"
+												>device
+												<button
+													class="help-trigger"
+													type="button"
+													data-help="推論に使う計算デバイスです。autoはCUDA利用可ならGPU、不可ならCPUを選びます。"
+													aria-label="deviceの説明"
+												>
+													?
+												</button>
+											</span>
+											<select id="device" name="device">
+												<option value="auto" selected>auto</option>
+												<option value="cuda">cuda</option>
+												<option value="cpu">cpu</option>
+											</select>
+										</label>
+									</div>
+								</fieldset>
+							</div>
+						</details>
+						<div class="actions">
+							<button id="submitBtn" type="submit">実行</button>
+							<button
 							id="cancelBtn"
 							class="button-secondary hidden"
 							type="button"
@@ -658,10 +790,13 @@
 		<script>
 			const form = document.getElementById("analyzeForm");
 			const submitBtn = document.getElementById("submitBtn");
-			const cancelBtn = document.getElementById("cancelBtn");
-			const copyBtn = document.getElementById("copyBtn");
-			const requestNote = document.getElementById("requestNote");
-			const taskInput = document.getElementById("task");
+				const cancelBtn = document.getElementById("cancelBtn");
+				const copyBtn = document.getElementById("copyBtn");
+				const requestNote = document.getElementById("requestNote");
+				const fileInput = document.getElementById("file");
+				const fileDropzone = document.getElementById("fileDropzone");
+				const fileDropText = document.getElementById("fileDropText");
+				const taskInput = document.getElementById("task");
 			const schemaWrap = document.getElementById("schemaWrap");
 			const schemaInput = document.getElementById("schema");
 			const useLayoutInput = document.getElementById("use_layout");
@@ -727,6 +862,63 @@
 							closeHelpBubbles();
 						}
 					});
+				}
+
+				function updateFileDropText() {
+					if (!fileDropText) {
+						return;
+					}
+					if (fileInput && fileInput.files && fileInput.files.length > 0) {
+						fileDropText.innerHTML = `<strong>選択中:</strong>${fileInput.files[0].name}`;
+						return;
+					}
+					fileDropText.innerHTML =
+						"<strong>ドラッグ&ドロップ</strong>またはクリックしてファイルを選択";
+				}
+
+				function setupFileDropzone() {
+					if (!fileDropzone || !fileInput) {
+						return;
+					}
+					const onDragEnter = (event) => {
+						event.preventDefault();
+						fileDropzone.classList.add("is-dragging");
+					};
+					const onDragLeave = (event) => {
+						event.preventDefault();
+						if (!fileDropzone.contains(event.relatedTarget)) {
+							fileDropzone.classList.remove("is-dragging");
+						}
+					};
+					const onDragOver = (event) => {
+						event.preventDefault();
+						fileDropzone.classList.add("is-dragging");
+					};
+					const onDrop = (event) => {
+						event.preventDefault();
+						fileDropzone.classList.remove("is-dragging");
+						const droppedFiles = event.dataTransfer && event.dataTransfer.files;
+						if (!droppedFiles || droppedFiles.length === 0) {
+							return;
+						}
+						try {
+							const transfer = new DataTransfer();
+							for (const droppedFile of droppedFiles) {
+								transfer.items.add(droppedFile);
+							}
+							fileInput.files = transfer.files;
+						} catch (error) {
+							// Ignore browsers that disallow assignment.
+						}
+						updateFileDropText();
+					};
+
+					fileDropzone.addEventListener("dragenter", onDragEnter);
+					fileDropzone.addEventListener("dragleave", onDragLeave);
+					fileDropzone.addEventListener("dragover", onDragOver);
+					fileDropzone.addEventListener("drop", onDrop);
+					fileInput.addEventListener("change", updateFileDropText);
+					updateFileDropText();
 				}
 
 			function taskNeedsSchema(task) {
@@ -1080,7 +1272,6 @@
 
 			form.addEventListener("submit", async (event) => {
 				event.preventDefault();
-				const fileInput = document.getElementById("file");
 				if (!fileInput.files || fileInput.files.length === 0) {
 					setError("ファイルを選択してください。");
 					return;
@@ -1214,6 +1405,7 @@
 			toggleSchema();
 			toggleLayoutOptions();
 			setupHelpBubbles();
+			setupFileDropzone();
 			fetchStatus();
 		</script>
 	</body>
