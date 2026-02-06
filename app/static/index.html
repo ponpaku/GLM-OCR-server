@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>GLM-OCR Local Console</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=M+PLUS+1p:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--bg-start: #fff6e8;
+				--bg-end: #ecf9f6;
+				--panel: rgba(255, 255, 255, 0.88);
+				--panel-strong: #ffffff;
+				--ink: #1f2937;
+				--muted: #556070;
+				--line: #d8e1ea;
+				--accent: #0f766e;
+				--accent-strong: #115e59;
+				--warn: #b45309;
+				--mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+				--sans: "M PLUS 1p", "Hiragino Kaku Gothic ProN", sans-serif;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				font-family: var(--sans);
+				color: var(--ink);
+				background: linear-gradient(140deg, var(--bg-start) 0%, var(--bg-end) 100%);
+			}
+
+			.wrap {
+				max-width: 1180px;
+				margin: 0 auto;
+				padding: 20px 16px 32px;
+				display: grid;
+				gap: 14px;
+			}
+
+			.panel {
+				background: var(--panel);
+				backdrop-filter: blur(8px);
+				border: 1px solid var(--line);
+				border-radius: 14px;
+				box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+			}
+
+			.header {
+				padding: 16px 18px;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			h1 {
+				margin: 0;
+				font-size: 20px;
+				letter-spacing: 0.02em;
+			}
+
+			.tag {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				font-size: 12px;
+				font-family: var(--mono);
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				padding: 6px 10px;
+				background: var(--panel-strong);
+				color: var(--muted);
+			}
+
+			form {
+				padding: 14px 18px 18px;
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+				gap: 12px;
+			}
+
+			label {
+				display: grid;
+				gap: 6px;
+				font-size: 12px;
+				color: var(--muted);
+			}
+
+			input,
+			select,
+			textarea,
+			button {
+				font: inherit;
+			}
+
+			input,
+			select,
+			textarea {
+				width: 100%;
+				border: 1px solid var(--line);
+				border-radius: 10px;
+				padding: 9px 10px;
+				background: #fff;
+				color: var(--ink);
+				font-size: 14px;
+			}
+
+			textarea {
+				resize: vertical;
+				min-height: 110px;
+				font-family: var(--mono);
+			}
+
+			.span-2 {
+				grid-column: span 2;
+			}
+
+			.actions {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				grid-column: 1 / -1;
+			}
+
+			button {
+				border: 0;
+				border-radius: 10px;
+				padding: 10px 18px;
+				background: var(--accent);
+				color: #fff;
+				font-weight: 600;
+				cursor: pointer;
+			}
+
+			button:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+			}
+
+			.button-secondary {
+				background: #b45309;
+			}
+
+			.note {
+				font-size: 12px;
+				color: var(--muted);
+			}
+
+			.result-head {
+				padding: 14px 18px;
+				border-bottom: 1px solid var(--line);
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				align-items: center;
+			}
+
+			.button-copy {
+				margin-left: auto;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				padding: 6px 12px;
+				background: var(--panel-strong);
+				color: var(--muted);
+				font-size: 12px;
+				font-weight: 600;
+			}
+
+			.button-copy.copied {
+				background: var(--accent);
+				border-color: var(--accent);
+				color: #fff;
+			}
+
+			.page-picker {
+				padding: 12px 18px 0;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			.page-picker label {
+				display: block;
+				font-size: 12px;
+				color: var(--muted);
+				min-width: fit-content;
+			}
+
+			.page-picker select {
+				max-width: 240px;
+			}
+
+			.result-body {
+				padding: 14px 18px 18px;
+				display: grid;
+				gap: 12px;
+			}
+
+			.card {
+				border: 1px solid var(--line);
+				border-radius: 10px;
+				background: var(--panel-strong);
+				padding: 12px;
+			}
+
+			pre {
+				margin: 0;
+				font-family: var(--mono);
+				font-size: 12px;
+				line-height: 1.55;
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+
+			details summary {
+				cursor: pointer;
+				color: var(--warn);
+				font-size: 12px;
+				margin-bottom: 8px;
+			}
+
+			.hidden {
+				display: none;
+			}
+
+			@media (max-width: 760px) {
+				.span-2 {
+					grid-column: span 1;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrap">
+			<section class="panel">
+				<div class="header">
+					<h1>GLM-OCR Local Console</h1>
+					<div style="display: flex; gap: 8px; flex-wrap: wrap">
+						<span class="tag" id="statusModel">model: -</span>
+						<span class="tag" id="statusDevice">device: -</span>
+						<span class="tag" id="statusCuda">cuda: -</span>
+					</div>
+				</div>
+				<form id="analyzeForm">
+					<label class="span-2">
+						ファイル (画像/PDF)
+						<input id="file" name="file" type="file" accept=".pdf,image/*" required />
+					</label>
+					<label>
+						device
+						<select id="device" name="device">
+							<option value="auto" selected>auto</option>
+							<option value="cuda">cuda</option>
+							<option value="cpu">cpu</option>
+						</select>
+					</label>
+					<label>
+						dpi (PDF only)
+						<input id="dpi" name="dpi" type="number" min="72" max="600" value="220" />
+					</label>
+					<label>
+						task
+						<select id="task" name="task">
+							<option value="text" selected>Text</option>
+							<option value="table">Table</option>
+							<option value="formula">Formula</option>
+							<option value="extract_json">JSON抽出</option>
+						</select>
+					</label>
+					<label>
+						改行処理
+						<select id="linebreak_mode" name="linebreak_mode">
+							<option value="none" selected>処理しない</option>
+							<option value="paragraph">段落整形（空行維持）</option>
+							<option value="compact">強力整形（改行ほぼ除去）</option>
+						</select>
+					</label>
+					<label>
+						max_new_tokens
+							<input
+								id="max_new_tokens"
+								name="max_new_tokens"
+								type="number"
+								min="1"
+								max="32768"
+								value="1024"
+							/>
+					</label>
+					<label>
+						temperature
+						<input
+							id="temperature"
+							name="temperature"
+							type="number"
+							step="0.1"
+							min="0"
+							max="2"
+							value="0"
+						/>
+					</label>
+					<label id="schemaWrap" class="span-2 hidden">
+						schema (JSON Schema string)
+						<textarea id="schema" name="schema" placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'></textarea>
+					</label>
+					<div class="actions">
+						<button id="submitBtn" type="submit">実行</button>
+						<button
+							id="cancelBtn"
+							class="button-secondary hidden"
+							type="button"
+							disabled
+						>
+							中断
+						</button>
+						<span class="note" id="requestNote">待機中</span>
+					</div>
+				</form>
+			</section>
+
+				<section class="panel">
+					<div class="result-head">
+						<span class="tag" id="resultTask">task: -</span>
+						<span class="tag" id="resultLinebreak">linebreak: -</span>
+						<span class="tag" id="resultPages">pages: -</span>
+						<span class="tag" id="resultDevice">run device: -</span>
+						<button id="copyBtn" class="button-copy" type="button" disabled>
+							コピー
+						</button>
+					</div>
+				<div class="page-picker hidden" id="pagePickerWrap">
+					<label for="pageSelect">表示ページ</label>
+					<select id="pageSelect"></select>
+				</div>
+				<div class="result-body" id="resultBody">
+					<div class="card">
+						<pre>ここに解析結果が表示されます。</pre>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<script>
+				const form = document.getElementById("analyzeForm");
+				const submitBtn = document.getElementById("submitBtn");
+				const cancelBtn = document.getElementById("cancelBtn");
+				const copyBtn = document.getElementById("copyBtn");
+				const requestNote = document.getElementById("requestNote");
+			const taskInput = document.getElementById("task");
+			const schemaWrap = document.getElementById("schemaWrap");
+			const schemaInput = document.getElementById("schema");
+			const pagePickerWrap = document.getElementById("pagePickerWrap");
+			const pageSelect = document.getElementById("pageSelect");
+			const resultBody = document.getElementById("resultBody");
+
+			const statusModel = document.getElementById("statusModel");
+			const statusDevice = document.getElementById("statusDevice");
+			const statusCuda = document.getElementById("statusCuda");
+			const resultTask = document.getElementById("resultTask");
+			const resultLinebreak = document.getElementById("resultLinebreak");
+			const resultPages = document.getElementById("resultPages");
+			const resultDevice = document.getElementById("resultDevice");
+
+				let currentResults = [];
+				let progressPollTimer = null;
+				let activeRequestId = null;
+				let currentViewItem = null;
+				let currentViewLabel = "";
+				let copyFeedbackTimer = null;
+
+			function taskNeedsSchema(task) {
+				return task === "extract_json";
+			}
+
+			function toggleSchema() {
+				const show = taskNeedsSchema(taskInput.value);
+				schemaWrap.classList.toggle("hidden", !show);
+				schemaInput.required = show;
+			}
+
+			function setBusy(isBusy, message) {
+				submitBtn.disabled = isBusy;
+				const canCancel = isBusy && Boolean(activeRequestId);
+				cancelBtn.disabled = !canCancel;
+				cancelBtn.classList.toggle("hidden", !canCancel);
+				requestNote.textContent = message;
+			}
+
+				function setError(message) {
+					currentViewItem = null;
+					currentViewLabel = "";
+					copyBtn.disabled = true;
+					if (copyFeedbackTimer) {
+						clearTimeout(copyFeedbackTimer);
+						copyFeedbackTimer = null;
+					}
+					copyBtn.classList.remove("copied");
+					copyBtn.textContent = "コピー";
+					resultBody.innerHTML = "";
+					const card = document.createElement("div");
+				card.className = "card";
+				const pre = document.createElement("pre");
+				pre.textContent = message;
+				card.appendChild(pre);
+				resultBody.appendChild(card);
+			}
+
+				function renderLoading(message = "解析中... しばらくお待ちください。") {
+					currentViewItem = null;
+					currentViewLabel = "";
+					copyBtn.disabled = true;
+					if (copyFeedbackTimer) {
+						clearTimeout(copyFeedbackTimer);
+						copyFeedbackTimer = null;
+					}
+					copyBtn.classList.remove("copied");
+					copyBtn.textContent = "コピー";
+					resultBody.innerHTML = "";
+					const card = document.createElement("div");
+				card.className = "card";
+				const pre = document.createElement("pre");
+				pre.id = "loadingText";
+				pre.textContent = message;
+				card.appendChild(pre);
+				resultBody.appendChild(card);
+			}
+
+			function updateLoading(message) {
+				const pre = document.getElementById("loadingText");
+				if (pre) {
+					pre.textContent = message;
+				}
+			}
+
+			function createRequestId() {
+				if (window.crypto && typeof window.crypto.randomUUID === "function") {
+					return window.crypto.randomUUID();
+				}
+				return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+			}
+
+			function stopProgressPolling() {
+				if (progressPollTimer) {
+					clearInterval(progressPollTimer);
+					progressPollTimer = null;
+				}
+			}
+
+			function startProgressPolling(requestId) {
+				stopProgressPolling();
+				const poll = async () => {
+					try {
+						const res = await fetch(`/api/progress/${encodeURIComponent(requestId)}`);
+						if (!res.ok) {
+							return;
+						}
+						const payload = await res.json();
+						const message = payload.message || "解析中...";
+						setBusy(true, message);
+						updateLoading(message);
+							if (payload.total_pages && Number(payload.total_pages) > 0) {
+								resultPages.textContent = `pages: ${payload.total_pages}`;
+							}
+							if (
+								payload.state === "done" ||
+								payload.state === "error" ||
+								payload.state === "canceled"
+							) {
+								stopProgressPolling();
+							}
+						} catch (error) {
+						// Keep silent during transient polling errors.
+					}
+				};
+				poll();
+				progressPollTimer = setInterval(poll, 500);
+			}
+
+			function renderPageSelector(results) {
+				pageSelect.innerHTML = "";
+				const allOption = document.createElement("option");
+				allOption.value = "all";
+				allOption.textContent = "ALL";
+				pageSelect.appendChild(allOption);
+				results.forEach((item, index) => {
+					const option = document.createElement("option");
+					option.value = String(index);
+					option.textContent = `Page ${item.page}`;
+					pageSelect.appendChild(option);
+				});
+				pageSelect.value = "all";
+				pagePickerWrap.classList.remove("hidden");
+			}
+
+			function combineAllPages(results) {
+				const text = results.map((item) => `[Page ${item.page}]\n${item.text || ""}`).join("\n\n");
+				const raw = results.map((item) => `[Page ${item.page}]\n${item.raw || ""}`).join("\n\n");
+				const json = results
+					.filter((item) => item.json !== null && item.json !== undefined)
+					.map((item) => ({ page: item.page, json: item.json }));
+				const errors = results
+					.filter((item) => item.error)
+					.map((item) => `[Page ${item.page}] ${item.error}`);
+				return {
+					text,
+					raw,
+					json: json.length > 0 ? json : null,
+					error: errors.length > 0 ? errors.join("\n") : null,
+				};
+			}
+
+				function renderResultItem(item, textLabel = "text", jsonLabel = "json", copyLabel = "") {
+					currentViewItem = item;
+					currentViewLabel = copyLabel;
+					copyBtn.disabled = false;
+					if (copyFeedbackTimer) {
+						clearTimeout(copyFeedbackTimer);
+						copyFeedbackTimer = null;
+					}
+					copyBtn.classList.remove("copied");
+					copyBtn.textContent = "コピー";
+					resultBody.innerHTML = "";
+
+				const textCard = document.createElement("div");
+				textCard.className = "card";
+				const textTitle = document.createElement("strong");
+				textTitle.textContent = textLabel;
+				const textPre = document.createElement("pre");
+				textPre.textContent = item.text || "";
+				textCard.appendChild(textTitle);
+				textCard.appendChild(document.createElement("hr"));
+				textCard.appendChild(textPre);
+				resultBody.appendChild(textCard);
+
+				if (item.json !== null && item.json !== undefined) {
+					const jsonCard = document.createElement("div");
+					jsonCard.className = "card";
+					const jsonTitle = document.createElement("strong");
+					jsonTitle.textContent = jsonLabel;
+					const jsonPre = document.createElement("pre");
+					jsonPre.textContent = JSON.stringify(item.json, null, 2);
+					jsonCard.appendChild(jsonTitle);
+					jsonCard.appendChild(document.createElement("hr"));
+					jsonCard.appendChild(jsonPre);
+					resultBody.appendChild(jsonCard);
+				}
+
+				const rawCard = document.createElement("div");
+				rawCard.className = "card";
+				const details = document.createElement("details");
+				const summary = document.createElement("summary");
+				summary.textContent = "raw (debug)";
+				const rawPre = document.createElement("pre");
+				rawPre.textContent = item.raw || "";
+				details.appendChild(summary);
+				details.appendChild(rawPre);
+				rawCard.appendChild(details);
+				if (item.error) {
+					const err = document.createElement("pre");
+					err.textContent = item.error;
+					rawCard.appendChild(err);
+				}
+				resultBody.appendChild(rawCard);
+			}
+
+				function renderPage(index) {
+					const item = currentResults[index];
+					if (!item) {
+						setError("結果のページが見つかりません。");
+						return;
+					}
+					renderResultItem(item, "text", "json", `Page ${item.page}`);
+				}
+
+				function renderAllPages() {
+					renderResultItem(combineAllPages(currentResults), "text (ALL)", "json (ALL)", "ALL");
+				}
+
+				function buildCopyText(item, label) {
+					if (!item) {
+						return "";
+					}
+					const parts = [];
+					if (label) {
+						parts.push(`# ${label}`);
+					}
+					if (item.text) {
+						parts.push(`[text]\n${item.text}`);
+					}
+					if (item.json !== null && item.json !== undefined) {
+						parts.push(`[json]\n${JSON.stringify(item.json, null, 2)}`);
+					}
+					if (item.error) {
+						parts.push(`[error]\n${item.error}`);
+					}
+					return parts.join("\n\n").trim();
+				}
+
+				function showCopyFeedback(message, copied = false) {
+					requestNote.textContent = message;
+					if (copyFeedbackTimer) {
+						clearTimeout(copyFeedbackTimer);
+						copyFeedbackTimer = null;
+					}
+					copyBtn.classList.toggle("copied", copied);
+					copyBtn.textContent = copied ? "コピー済み" : "コピー";
+					if (copied) {
+						copyFeedbackTimer = setTimeout(() => {
+							copyBtn.classList.remove("copied");
+							copyBtn.textContent = "コピー";
+							copyFeedbackTimer = null;
+						}, 1200);
+					}
+				}
+
+				async function copyCurrentView() {
+					const text = buildCopyText(currentViewItem, currentViewLabel);
+					if (!text) {
+						return;
+					}
+					try {
+						await navigator.clipboard.writeText(text);
+						showCopyFeedback("コピーしました", true);
+					} catch (error) {
+						const textarea = document.createElement("textarea");
+						textarea.value = text;
+						textarea.style.position = "fixed";
+						textarea.style.opacity = "0";
+						document.body.appendChild(textarea);
+						textarea.focus();
+						textarea.select();
+						try {
+							document.execCommand("copy");
+							showCopyFeedback("コピーしました", true);
+						} catch (fallbackError) {
+							showCopyFeedback("コピーに失敗しました", false);
+						} finally {
+							document.body.removeChild(textarea);
+						}
+					}
+				}
+
+			async function fetchStatus() {
+				try {
+					const res = await fetch("/api/status");
+					const payload = await res.json();
+					statusModel.textContent = `model: ${payload.model || "-"}`;
+					statusDevice.textContent = `device default: ${payload.device_default || "-"}`;
+					statusCuda.textContent = `cuda: ${String(payload.cuda_available)}`;
+					const cudaOption = document.querySelector('#device option[value="cuda"]');
+					if (cudaOption) {
+						cudaOption.disabled = !payload.cuda_available;
+						if (!payload.cuda_available && document.getElementById("device").value === "cuda") {
+							document.getElementById("device").value = "auto";
+						}
+					}
+				} catch (error) {
+					statusCuda.textContent = "cuda: status unavailable";
+				}
+			}
+
+			form.addEventListener("submit", async (event) => {
+				event.preventDefault();
+				const fileInput = document.getElementById("file");
+				if (!fileInput.files || fileInput.files.length === 0) {
+					setError("ファイルを選択してください。");
+					return;
+				}
+
+					const formData = new FormData();
+					const requestId = createRequestId();
+					activeRequestId = requestId;
+					formData.append("file", fileInput.files[0]);
+				formData.append("device", document.getElementById("device").value);
+				formData.append("dpi", document.getElementById("dpi").value);
+				formData.append("task", taskInput.value);
+				formData.append("linebreak_mode", document.getElementById("linebreak_mode").value);
+				formData.append("max_new_tokens", document.getElementById("max_new_tokens").value);
+				formData.append("temperature", document.getElementById("temperature").value);
+				formData.append("request_id", requestId);
+				if (taskNeedsSchema(taskInput.value)) {
+					formData.append("schema", schemaInput.value);
+				}
+
+					setBusy(true, "事前処理中");
+					pageSelect.innerHTML = "";
+					pagePickerWrap.classList.add("hidden");
+						currentResults = [];
+						currentViewItem = null;
+						currentViewLabel = "";
+						copyBtn.disabled = true;
+						if (copyFeedbackTimer) {
+							clearTimeout(copyFeedbackTimer);
+							copyFeedbackTimer = null;
+						}
+						copyBtn.classList.remove("copied");
+						copyBtn.textContent = "コピー";
+					resultTask.textContent = `task: ${taskInput.value}`;
+				resultLinebreak.textContent = `linebreak: ${document.getElementById("linebreak_mode").value}`;
+				resultPages.textContent = "pages: -";
+				resultDevice.textContent = "run device: -";
+				renderLoading("事前処理中");
+				startProgressPolling(requestId);
+
+					try {
+						const res = await fetch("/api/analyze", { method: "POST", body: formData });
+						const payload = await res.json();
+						if (!res.ok) {
+							throw new Error(payload.detail || "API request failed");
+						}
+						stopProgressPolling();
+						activeRequestId = null;
+
+						currentResults = Array.isArray(payload.results) ? payload.results : [];
+						resultTask.textContent = `task: ${payload.task || "-"}`;
+						resultLinebreak.textContent = `linebreak: ${payload.linebreak_mode || "-"}`;
+						resultPages.textContent = `pages: ${payload.page_count || 0}`;
+						resultDevice.textContent = `run device: ${payload.device || "-"}`;
+
+						if (currentResults.length === 0) {
+							if (payload.state === "canceled") {
+								setError("中断しました。");
+							} else {
+								setError("結果が空です。");
+							}
+						} else {
+							renderPageSelector(currentResults);
+							renderAllPages();
+						}
+						if (payload.state === "canceled") {
+							setBusy(false, "中断");
+						} else {
+							setBusy(false, "完了");
+						}
+					} catch (error) {
+						stopProgressPolling();
+						activeRequestId = null;
+						setError(`エラー: ${error.message}`);
+						setBusy(false, "失敗");
+					}
+				});
+
+				cancelBtn.addEventListener("click", async () => {
+					if (!activeRequestId) {
+						return;
+					}
+					const requestId = activeRequestId;
+					cancelBtn.disabled = true;
+					requestNote.textContent = "中断要求中...";
+					updateLoading("中断要求中...");
+					try {
+						const res = await fetch(`/api/cancel/${encodeURIComponent(requestId)}`, {
+							method: "POST",
+						});
+						const payload = await res.json();
+						if (!res.ok) {
+							throw new Error(payload.detail || "中断要求に失敗しました");
+						}
+						requestNote.textContent = payload.message || "中断要求を受け付けました";
+						updateLoading(payload.message || "中断要求を受け付けました");
+					} catch (error) {
+						requestNote.textContent = `中断要求失敗: ${error.message}`;
+						if (activeRequestId) {
+							cancelBtn.disabled = false;
+						}
+					}
+				});
+
+				pageSelect.addEventListener("change", () => {
+					if (pageSelect.value === "all") {
+						renderAllPages();
+					return;
+				}
+				const index = Number(pageSelect.value);
+				if (Number.isNaN(index)) {
+					renderAllPages();
+					return;
+				}
+					renderPage(index);
+				});
+
+				copyBtn.addEventListener("click", () => {
+					void copyCurrentView();
+				});
+
+			taskInput.addEventListener("change", toggleSchema);
+			toggleSchema();
+			fetchStatus();
+		</script>
+	</body>
+</html>
